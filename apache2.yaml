@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu-apache
+  namespace: default
+  labels:
+    app: ubuntu-apache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ubuntu-apache
+  template:
+    metadata:
+      labels:
+        app: ubuntu-apache
+    spec:
+      containers:
+      - name: ubuntu-apache-container
+        image: 732721660871.dkr.ecr.ap-northeast-2.amazonaws.com/watchall:ububtuapache2
+        ports:
+        - containerPort: 80
+      imagePullSecrets:  # 해당 설정 추가
+        - name: ecr-secret
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache2-seunghye
+  namespace: default
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+spec:
+  type: LoadBalancer
+  selector:
+    app: ubuntu-apache
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
